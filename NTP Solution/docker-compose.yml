@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+
+  ntp-server:
+    image: cturra/ntp:latest
+    restart: unless-stopped
+    container_name: SYSTEM-NTPSERVER
+    environment:
+      - TZ=Etc/UTC
+      - NTP_SERVERS=ptbtime1.ptb.de,ptbtime2.ptb.de,ptbtime3.ptb.de,ntps1-0.eecsit.tu-berlin.de,ntp1.fau.de,zeit.fu-berlin.de
+      - LOG_LEVEL=0 #0..3
+    ports:
+      - 123:123/udp
+    expose:
+      - 123/udp
+    read_only: true
+    tmpfs:
+      - /etc/chrony:rw,mode=1750
+      - /run/chrony:rw,mode=1750
+      - /var/lib/chrony:rw,mode=1750
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge
+    name: SYSTEM-NTPSERVER
+
+#Auf Hostsystem fuer IPv6 noch manuell freigeben!
+#firewall-cmd --permanent --add-service=ntp
+#firewall-cmd --reload
