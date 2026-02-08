@@ -13,6 +13,20 @@ timezone: Etc/UTC
 
 locale: en_US.UTF-8
 
+# --- Benutzer (optional) -----------------------------------------------------
+# Einkommentieren und SSH-Key anpassen um eigenen Benutzer zu erstellen.
+# Ohne diesen Block wird der Standard-User des Cloud-Images verwendet.
+#users:
+#  - name: admin
+#    groups: sudo
+#    sudo: ALL=(ALL) NOPASSWD:ALL
+#    shell: /bin/bash
+#    lock_passwd: true
+#    ssh_authorized_keys:
+#      - ssh-ed25519 AAAA...DEIN_PUBLIC_KEY...== admin@bauer-group.com
+#
+#ssh_pwauth: false
+
 # --- Paketquellen aktualisieren und Pakete installieren ----------------------
 package_update: true
 package_upgrade: true
