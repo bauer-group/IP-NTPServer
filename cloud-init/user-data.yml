@@ -1,0 +1,135 @@
+#cloud-config
+# =============================================================================
+# Cloud-Init: NTP Server (time.bauer-group.com)
+# =============================================================================
+# Chrony-basierter NTP Server mit automatischen OS-Updates.
+# Verwendung: Als user-data bei VM-Erstellung angeben.
+# Getestet fuer: Ubuntu 24.04+ / Debian 13+
+# =============================================================================
+
+hostname: time.bauer-group.com
+
+timezone: Etc/UTC
+
+locale: en_US.UTF-8
+
+# --- Paketquellen aktualisieren und Pakete installieren ----------------------
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+packages:
+  - chrony
+  - unattended-upgrades
+  - apt-listchanges
+  - needrestart
+  - ufw
+
+# --- NTP (Chrony) Konfiguration ---------------------------------------------
+write_files:
+  # Chrony Hauptkonfiguration
+  - path: /etc/chrony/chrony.conf
+    owner: root:root
+    permissions: "0644"
+    content: |
+      # =======================================================================
+      # Chrony NTP Server - time.bauer-group.com
+      # =======================================================================
+
+      # Upstream NTP Server (deutsche Zeitquellen)
+      server ptbtime1.ptb.de iburst prefer
+      server ptbtime2.ptb.de iburst
+      server ptbtime3.ptb.de iburst
+      server ntps1-0.eecsit.tu-berlin.de iburst
+      server ntp1.fau.de iburst
+      server zeit.fu-berlin.de iburst
+
+      # Zeitdifferenz-Datei (fuer Neustarts)
+      driftfile /var/lib/chrony/chrony.drift
+
+      # NTP-Dienst fuer alle Clients im Netzwerk bereitstellen
+      allow all
+
+      # Logging
+      log tracking measurements statistics
+      logdir /var/log/chrony
+
+      # RTC (Hardware-Uhr) synchronisieren
+      rtcsync
+
+      # Grosse Zeitspruenge beim Start erlauben (erste 3 Updates)
+      makestep 1.0 3
+
+      # Leap-Second-Handling
+      leapsectz right/UTC
+
+  # Unattended-Upgrades: Alle Updates automatisch installieren
+  - path: /etc/apt/apt.conf.d/50unattended-upgrades
+    owner: root:root
+    permissions: "0644"
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+          "${distro_id}:${distro_codename}";
+          "${distro_id}:${distro_codename}-security";
+          "${distro_id}:${distro_codename}-updates";
+          "${distro_id}ESMApps:${distro_codename}-apps-security";
+          "${distro_id}ESM:${distro_codename}-infra-security";
+      };
+
+      // Alle installierten Pakete aktualisieren (nicht nur Sicherheit)
+      Unattended-Upgrade::DevRelease "auto";
+
+      // Automatischer Reboot wenn noetig (03:00 Uhr)
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+
+      // Ungenutzte Abhaengigkeiten entfernen
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+
+      // Syslog-Logging
+      Unattended-Upgrade::SyslogEnable "true";
+
+  # Unattended-Upgrades: Auto-Update Intervall
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root:root
+    permissions: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+      APT::Periodic::AutocleanInterval "7";
+
+  # needrestart: Automatischer Restart von Diensten nach Updates
+  - path: /etc/needrestart/conf.d/auto-restart.conf
+    owner: root:root
+    permissions: "0644"
+    content: |
+      $nrconf{restart} = 'a';
+
+# --- Befehle nach der Installation ------------------------------------------
+runcmd:
+  # Firewall konfigurieren
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow ssh
+  - ufw allow 123/udp comment "NTP"
+  - ufw --force enable
+
+  # Chrony aktivieren und starten
+  - systemctl enable chrony
+  - systemctl restart chrony
+
+  # Unattended-Upgrades aktivieren
+  - systemctl enable unattended-upgrades
+  - systemctl restart unattended-upgrades
+
+  # Timer fuer automatische Updates aktivieren
+  - systemctl enable apt-daily.timer
+  - systemctl enable apt-daily-upgrade.timer
+
+  # Initiale Zeitsynchronisation erzwingen
+  - chronyc makestep
+
+# --- Endgueltige Nachricht --------------------------------------------------
+final_message: "NTP Server Setup abgeschlossen nach $UPTIME Sekunden."
