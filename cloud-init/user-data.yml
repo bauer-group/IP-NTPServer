@@ -50,16 +50,13 @@ write_files:
       # Chrony NTP Server - time.bauer-group.com
       # =======================================================================
 
-      # Upstream NTP Server (deutsche Zeitquellen, NTS wo verfuegbar)
-      server ptbtime1.ptb.de iburst nts prefer
-      server ptbtime2.ptb.de iburst nts
-      server ptbtime3.ptb.de iburst nts
+      # Upstream NTP Server (deutsche Zeitquellen)
+      server ptbtime1.ptb.de iburst prefer
+      server ptbtime2.ptb.de iburst
+      server ptbtime3.ptb.de iburst
       server ntps1-0.eecsit.tu-berlin.de iburst
       server ntp1.fau.de iburst
       server zeit.fu-berlin.de iburst
-
-      # NTS-Zertifikate cachen (persistiert ueber Neustarts)
-      ntsdumpdir /var/lib/chrony
 
       # Zeitdifferenz-Datei (fuer Neustarts)
       driftfile /var/lib/chrony/chrony.drift
