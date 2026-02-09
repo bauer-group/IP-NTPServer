@@ -218,11 +218,13 @@ runcmd:
   # Initiale Zeitsynchronisation erzwingen
   - chronyc makestep
 
-  # Standard-MOTD aufraeumen (Ubuntu-Werbung etc.)
+  # Standard-MOTD aufraeumen (Werbung, irrelevante Hinweise)
   - chmod -x /etc/update-motd.d/10-help-text 2>/dev/null || true
   - chmod -x /etc/update-motd.d/50-motd-news 2>/dev/null || true
+  - chmod -x /etc/update-motd.d/85-fwupd 2>/dev/null || true
   - chmod -x /etc/update-motd.d/88-esm-announce 2>/dev/null || true
   - chmod -x /etc/update-motd.d/91-contract-ua-esm-status 2>/dev/null || true
+  - chmod -x /etc/update-motd.d/97-overlayroot 2>/dev/null || true
 
 # --- Endgueltige Nachricht --------------------------------------------------
 final_message: "NTP Server Setup abgeschlossen nach $UPTIME Sekunden."

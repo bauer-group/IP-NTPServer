@@ -181,11 +181,13 @@ localectl set-locale LANG=en_US.UTF-8
 
 echo "[6/7] Login-Banner einrichten..."
 
-# Standard-MOTD aufraeumen (Ubuntu-Werbung etc.)
+# Standard-MOTD aufraeumen (Werbung, irrelevante Hinweise)
 chmod -x /etc/update-motd.d/10-help-text 2>/dev/null || true
 chmod -x /etc/update-motd.d/50-motd-news 2>/dev/null || true
+chmod -x /etc/update-motd.d/85-fwupd 2>/dev/null || true
 chmod -x /etc/update-motd.d/88-esm-announce 2>/dev/null || true
 chmod -x /etc/update-motd.d/91-contract-ua-esm-status 2>/dev/null || true
+chmod -x /etc/update-motd.d/97-overlayroot 2>/dev/null || true
 
 cat > /etc/update-motd.d/60-ntp-status <<'MOTD_SCRIPT'
 #!/usr/bin/env bash
