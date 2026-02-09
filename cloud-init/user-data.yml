@@ -240,4 +240,10 @@ runcmd:
   - chmod -x /etc/update-motd.d/97-overlayroot 2>/dev/null || true
 
 # --- Endgueltige Nachricht --------------------------------------------------
-final_message: "NTP Server Setup abgeschlossen nach $UPTIME Sekunden."
+final_message: "NTP Server Setup abgeschlossen nach $UPTIME Sekunden. Neustart in 1 Minute..."
+
+# --- Neustart nach Setup ----------------------------------------------------
+power_state:
+  mode: reboot
+  delay: "+1"
+  message: "NTP Server Setup abgeschlossen — Neustart fuer sauberen Zustand."

@@ -273,3 +273,7 @@ echo ""
 echo "Wartungsfenster: 03:00-03:30 UTC (apt-update, upgrade, reboot)"
 echo "Unattended-Upgrades Log: /var/log/unattended-upgrades/"
 echo "Chrony Log: /var/log/chrony/"
+echo ""
+echo "Server startet in 10 Sekunden neu..."
+sleep 10
+reboot
