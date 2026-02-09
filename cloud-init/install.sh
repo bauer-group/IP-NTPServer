@@ -38,8 +38,13 @@ echo ""
 
 # --- Pakete installieren -----------------------------------------------------
 
-echo "[1/5] Pakete aktualisieren und installieren..."
+echo "[1/6] Bestehende NTP-Dienste entfernen..."
 export DEBIAN_FRONTEND=noninteractive
+systemctl stop systemd-timesyncd 2>/dev/null || true
+systemctl disable systemd-timesyncd 2>/dev/null || true
+apt-get remove -y -q ntp ntpsec 2>/dev/null || true
+
+echo "[2/6] Pakete aktualisieren und installieren..."
 apt-get update -q
 apt-get upgrade -y -q
 apt-get install -y -q \
@@ -50,7 +55,7 @@ apt-get install -y -q \
 
 # --- Chrony konfigurieren ----------------------------------------------------
 
-echo "[2/5] Chrony NTP Server konfigurieren..."
+echo "[3/6] Chrony NTP Server konfigurieren..."
 cat > /etc/chrony/chrony.conf <<'CHRONY_CONF'
 # =======================================================================
 # Chrony NTP Server - time.bauer-group.com
@@ -103,7 +108,7 @@ chronyc makestep
 
 # --- Automatische Updates konfigurieren --------------------------------------
 
-echo "[3/5] Automatische Updates konfigurieren..."
+echo "[4/6] Automatische Updates konfigurieren..."
 cat > /etc/apt/apt.conf.d/50unattended-upgrades <<'UNATTENDED_CONF'
 Unattended-Upgrade::Allowed-Origins {
     "${distro_id}:${distro_codename}";
@@ -167,13 +172,14 @@ systemctl enable apt-daily-upgrade.timer
 
 # --- System-Einstellungen -----------------------------------------------------
 
-echo "[4/5] Hostname, Timezone und Locale setzen..."
+echo "[5/6] Hostname, Timezone und Locale setzen..."
 hostnamectl set-hostname "${NTP_HOSTNAME}"
 timedatectl set-timezone Etc/UTC
 localectl set-locale LANG=en_US.UTF-8
 
 # --- Abschluss ---------------------------------------------------------------
 
+echo "[6/6] Verifizierung..."
 echo ""
 echo "============================================="
 echo " Setup abgeschlossen!"

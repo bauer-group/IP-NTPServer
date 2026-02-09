@@ -153,6 +153,11 @@ write_files:
 
 # --- Befehle nach der Installation ------------------------------------------
 runcmd:
+  # Standard-NTP-Dienste entfernen (Konflikt mit Chrony)
+  - systemctl stop systemd-timesyncd || true
+  - systemctl disable systemd-timesyncd || true
+  - apt-get remove -y -q ntp ntpsec || true
+
   # Chrony aktivieren und starten
   - systemctl enable chrony
   - systemctl restart chrony
